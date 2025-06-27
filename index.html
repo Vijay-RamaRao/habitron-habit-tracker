@@ -1,0 +1,2665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #1e1e2e;
+            --sidebar-bg-color: #181825;
+            --main-content-bg-color: #1e1e2e;
+            --card-bg-color: #2a2a40;
+            --card-raised-bg-color: #323248;
+            --text-color: #cdd6f4;
+            --text-muted-color: #a6adc8;
+            --primary-accent-color: #89b4fa;
+            --secondary-accent-color: #74c7ec;
+            --border-color: #313244;
+            --success-color: #a6e3a1;
+            --danger-color: #f38ba8;
+            --warning-color: #f9e2af;
+
+            --shadow-light: rgba(255, 255, 255, 0.05);
+            --shadow-dark: rgba(0, 0, 0, 0.3);
+            --shadow-inset-light: rgba(255, 255, 255, 0.1);
+            --shadow-inset-dark: rgba(0, 0, 0, 0.2);
+
+            --heatmap-color-0: #1e1e2e;
+            --heatmap-color-1: #2d3748;
+            --heatmap-color-2: #4a5568;
+            --heatmap-color-3: #6b7280;
+            --heatmap-color-4: #89b4fa;
+            --heatmap-color-5: #74c7ec;
+
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --border-radius: 12px;
+            --border-radius-small: 8px;
+            --transition-speed: 0.3s;
+            --transition-spring: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: linear-gradient(135deg, var(--bg-color) 0%, #151521 100%);
+            color: var(--text-color);
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            min-height: 100vh;
+            font-size: 16px;
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            background: var(--bg-color);
+        }
+
+        .neu-raised {
+            background: var(--card-bg-color);
+            box-shadow: 
+                8px 8px 16px var(--shadow-dark),
+                -8px -8px 16px var(--shadow-light);
+        }
+
+        .neu-pressed {
+            background: var(--card-bg-color);
+            box-shadow: 
+                inset 4px 4px 8px var(--shadow-inset-dark),
+                inset -4px -4px 8px var(--shadow-inset-light);
+        }
+
+        .neu-subtle {
+            background: var(--card-bg-color);
+            box-shadow: 
+                4px 4px 12px var(--shadow-dark),
+                -4px -4px 12px var(--shadow-light);
+        }
+
+        .sidebar {
+            width: 320px;
+            background: var(--sidebar-bg-color);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            transition: all var(--transition-speed) var(--transition-spring);
+            overflow-y: auto;
+        }
+
+        .sidebar h1 {
+            font-size: 2em;
+            background: linear-gradient(135deg, var(--primary-accent-color), var(--secondary-accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 28px;
+            text-align: center;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .sidebar h1::before {
+            font-size: 0.8em;
+            background: none !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: unset !important;
+            background-clip: unset !important;
+            color: initial !important;
+            filter: none !important;
+        }
+
+        .sidebar h2 {
+            font-size: 1.1em;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            color: var(--text-muted-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar h2::before {
+            content: "📝";
+            font-size: 0.9em;
+            color: initial !important;
+            background: none !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: unset !important;
+            background-clip: unset !important;
+            filter: none !important;
+        }
+
+        .add-habit-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .add-habit-form input[type="text"],
+        .add-habit-form input[type="color"] {
+            padding: 12px 16px;
+            border-radius: var(--border-radius-small);
+            border: none;
+            background: var(--card-bg-color);
+            color: var(--text-color);
+            font-size: 0.9em;
+            transition: all var(--transition-speed) var(--transition-spring);
+            box-shadow: 
+                inset 2px 2px 6px var(--shadow-inset-dark),
+                inset -2px -2px 6px var(--shadow-inset-light);
+        }
+
+        .add-habit-form input[type="text"]:focus {
+            outline: none;
+            box-shadow: 
+                inset 2px 2px 6px var(--shadow-inset-dark),
+                inset -2px -2px 6px var(--shadow-inset-light),
+                0 0 0 2px var(--primary-accent-color);
+        }
+
+        .add-habit-form input[type="color"] {
+            padding: 6px;
+            height: 48px;
+            cursor: pointer;
+        }
+
+        .add-habit-form button {
+            padding: 14px 16px;
+            border-radius: var(--border-radius-small);
+            border: none;
+            background: linear-gradient(135deg, var(--primary-accent-color), var(--secondary-accent-color));
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-speed) var(--transition-spring);
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 
+                4px 4px 12px var(--shadow-dark),
+                -2px -2px 8px var(--shadow-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .add-habit-form button::before {
+            content: "➕";
+            font-size: 0.9em;
+            color: initial !important;
+            background: none !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: unset !important;
+            background-clip: unset !important;
+            filter: none !important;
+        }
+
+        .add-habit-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                6px 6px 16px var(--shadow-dark),
+                -3px -3px 10px var(--shadow-light);
+        }
+
+        .add-habit-form button:active {
+            transform: translateY(0);
+            box-shadow: 
+                2px 2px 8px var(--shadow-dark),
+                -1px -1px 4px var(--shadow-light);
+        }
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .color-picker-wrapper label {
+            font-size: 0.9em;
+            color: var(--text-muted-color);
+            font-weight: 500;
+        }
+
+        .completion-rates {
+            background: var(--card-bg-color);
+            padding: 16px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: 
+                6px 6px 14px var(--shadow-dark),
+                -6px -6px 14px var(--shadow-light);
+        }
+
+        .completion-rates h3 {
+            font-size: 1em;
+            color: var(--text-muted-color);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .completion-rates h3::before {
+            content: "📈";
+            font-size: 0.9em;
+            color: initial !important;
+            background: none !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: unset !important;
+            background-clip: unset !important;
+            filter: none !important;
+        }
+
+        .rate-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 6px 0;
+        }
+
+        .rate-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .rate-label {
+            font-size: 0.85em;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .rate-value {
+            font-size: 0.85em;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: var(--sidebar-bg-color);
+            box-shadow: 
+                inset 1px 1px 3px var(--shadow-inset-dark),
+                inset -1px -1px 3px var(--shadow-inset-light);
+            transition: color 0.5s var(--transition-spring);
+        }
+
+        .rate-value.high {
+            color: var(--success-color);
+        }
+
+        .rate-value.medium {
+            color: var(--warning-color);
+        }
+
+        .rate-value.low {
+            color: var(--danger-color);
+        }
+
+        .trend-indicator {
+            font-size: 0.7em;
+            margin-left: 4px;
+        }
+        .filter-panel {
+            background: var(--card-bg-color);
+            padding: 16px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: 
+                6px 6px 14px var(--shadow-dark),
+                -6px -6px 14px var(--shadow-light);
+        }
+
+        .filter-group {
+            margin-bottom: 16px;
+        }
+
+        .filter-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .filter-label {
+            display: block;
+            font-size: 0.85em;
+            color: var(--text-muted-color);
+            margin-bottom: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: var(--border-radius-small);
+            border: none;
+            background: var(--sidebar-bg-color);
+            color: var(--text-color);
+            font-size: 0.85em;
+            transition: all var(--transition-speed) var(--transition-spring);
+            box-shadow: 
+                inset 2px 2px 4px var(--shadow-inset-dark),
+                inset -2px -2px 4px var(--shadow-inset-light);
+        }
+
+        .filter-input:focus {
+            outline: none;
+            box-shadow: 
+                inset 2px 2px 4px var(--shadow-inset-dark),
+                inset -2px -2px 4px var(--shadow-inset-light),
+                0 0 0 2px var(--primary-accent-color);
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: var(--border-radius-small);
+            border: none;
+            background: var(--sidebar-bg-color);
+            color: var(--text-color);
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all var(--transition-speed) var(--transition-spring);
+            box-shadow: 
+                inset 2px 2px 4px var(--shadow-inset-dark),
+                inset -2px -2px 4px var(--shadow-inset-light);
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2389b4fa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 16px;
+            padding-right: 32px;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            box-shadow: 
+                inset 2px 2px 4px var(--shadow-inset-dark),
+                inset -2px -2px 4px var(--shadow-inset-light),
+                0 0 0 2px var(--primary-accent-color);
+        }
+
+        .filter-checkboxes {
+            max-height: 120px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-small);
+            padding: 8px;
+            background: var(--sidebar-bg-color);
+            box-shadow: 
+                inset 1px 1px 3px var(--shadow-inset-dark),
+                inset -1px -1px 3px var(--shadow-inset-light);
+        }
+
+        .filter-checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 4px 0;
+            font-size: 0.8em;
+        }
+
+        .filter-checkbox-item input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .filter-checkbox-item label {
+            color: var(--text-color);
+            cursor: pointer;
+            flex-grow: 1;
+        }
+
+        .filter-stats {
+            font-size: 0.75em;
+            color: var(--text-muted-color);
+            text-align: center;
+            margin-top: 8px;
+            padding: 4px 8px;
+            background: var(--sidebar-bg-color);
+            border-radius: var(--border-radius-small);
+        }
+
+        .habit-list-sortable {
+            list-style-type: none;
+            flex-grow: 1;
+            overflow-y: auto;
+            min-height: 400px;
+            max-height: 600px;
+            padding-right: 4px;
+        }
+
+        .habit-list-sortable li {
+            background: var(--card-bg-color);
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            border-radius: var(--border-radius-small);
+            border-left: 4px solid var(--primary-accent-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: grab;
+            transition: all var(--transition-speed) var(--transition-spring);
+            box-shadow: 
+                4px 4px 12px var(--shadow-dark),
+                -4px -4px 12px var(--shadow-light);
+        }
+
+        .habit-list-sortable li:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                6px 6px 16px var(--shadow-dark),
+                -6px -6px 16px var(--shadow-light);
+        }
+
+        .habit-list-sortable li.dragging {
+            opacity: 0.7;
+            transform: rotate(2deg) scale(1.02);
+            box-shadow: 
+                8px 8px 20px var(--shadow-dark),
+                -8px -8px 20px var(--shadow-light);
+        }
+
+        .habit-list-sortable li .habit-name {
+            flex-grow: 1;
+            margin-right: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .habit-list-sortable .delete-habit-btn {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 1.2em;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all var(--transition-speed) var(--transition-spring);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+
+        .habit-list-sortable .delete-habit-btn:hover {
+            background: var(--danger-color);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 
+                2px 2px 8px var(--shadow-dark),
+                -2px -2px 8px var(--shadow-light);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex-grow: 1;
+            padding: 24px;
+            background: var(--main-content-bg-color);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            transition: all 0.4s var(--transition-spring);
+        }
+
+        @media (min-width: 769px) {
+            .main-content {
+                display: flex !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 0;
+                margin: 0;
+                display: block;
+                max-height: 0;
+                opacity: 0;
+                overflow: hidden;
+                transition: all 0.5s var(--transition-spring);
+            }
+
+            .main-content.mobile-visible {
+                max-height: 2000px;
+                opacity: 1;
+                padding: 24px;
+                margin-top: 16px;
+            }
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 8px;
+        }
+
+        .main-header h2 {
+            font-size: 1.8em;
+            color: var(--text-color);
+            min-width: 250px;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s var(--transition-spring);
+        }
+
+        .main-header button {
+            background: var(--card-bg-color);
+            color: var(--primary-accent-color);
+            border: none;
+            padding: 12px 16px;
+            border-radius: var(--border-radius-small);
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: all var(--transition-speed) var(--transition-spring);
+            box-shadow: 
+                4px 4px 12px var(--shadow-dark),
+                -4px -4px 12px var(--shadow-light);
+        }
+
+        .main-header button:hover {
+            color: white;
+            background: var(--primary-accent-color);
+            transform: translateY(-2px);
+            box-shadow: 
+                6px 6px 16px var(--shadow-dark),
+                -6px -6px 16px var(--shadow-light);
+        }
+
+        .main-content section {
+            background: var(--card-bg-color);
+            padding: 24px;
+            border-radius: var(--border-radius);
+            box-shadow: 
+                8px 8px 16px var(--shadow-dark),
+                -8px -8px 16px var(--shadow-light);
+            transition: all var(--transition-speed) var(--transition-spring);
+        }
+
+        .main-content section:hover {
+            box-shadow: 
+                10px 10px 20px var(--shadow-dark),
+                -10px -10px 20px var(--shadow-light);
+        }
+
+        .main-content section h3 {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--primary-accent-color), var(--secondary-accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .calendar-heatmap-section h3::before {
+            content: "📅";
+            font-size: 0.9em;
+            background: none !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: unset !important;
+            background-clip: unset !important;
+            color: initial !important;
+            filter: none !important;
+        }
+
+        .monthly-goals-section h3::before {
+            content: "📊";
+            font-size: 0.9em;
+            background: none !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: unset !important;
+            background-clip: unset !important;
+            color: initial !important;
+            filter: none !important;
+        }
+
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .calendar-header .day-label {
+            font-weight: 600;
+            text-align: center;
+            font-size: 0.85em;
+            color: var(--text-muted-color);
+            padding: 8px 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            margin-bottom: 20px;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            transition: all 0.4s var(--transition-spring);
+        }
+
+        .calendar-grid .calendar-day {
+            aspect-ratio: 1 / 1;
+            max-width: 85px;
+            max-height: 85px;
+            background: var(--heatmap-color-0);
+            border-radius: var(--border-radius-small);
+            cursor: pointer;
+            transition: all var(--transition-speed) var(--transition-spring);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.85em;
+            color: var(--text-color);
+            font-weight: 500;
+            box-shadow: 
+                2px 2px 6px var(--shadow-dark),
+                -2px -2px 6px var(--shadow-light);
+        }
+
+        .calendar-grid .calendar-day:hover {
+            transform: scale(1.1);
+            box-shadow: 
+                4px 4px 12px var(--shadow-dark),
+                -4px -4px 12px var(--shadow-light),
+                0 0 20px rgba(137, 180, 250, 0.3);
+            z-index: 10;
+        }
+
+        .calendar-grid .calendar-day.empty {
+            background: transparent;
+            cursor: default;
+            box-shadow: none;
+        }
+
+        .calendar-grid .calendar-day.empty:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .legend {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            font-size: 0.8em;
+            color: var(--text-muted-color);
+            gap: 8px;
+        }
+
+        .legend .color-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            box-shadow: 
+                1px 1px 3px var(--shadow-dark),
+                -1px -1px 3px var(--shadow-light);
+        }
+
+        .progress-bars-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 24px;
+        }
+
+        @media (max-width: 1200px) {
+            .progress-bars-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .progress-bars-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 16px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .progress-bars-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 12px;
+            }
+            
+            .progress-card {
+                padding: 16px;
+            }
+            
+            .progress-card h4 {
+                font-size: 1em;
+                margin-bottom: 12px;
+            }
+            
+            .radial-progress {
+                width: 100px !important;
+                height: 100px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .progress-bars-grid {
+                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+                gap: 10px;
+            }
+            
+            .progress-card {
+                padding: 12px;
+            }
+            
+            .radial-progress {
+                width: 90px !important;
+                height: 90px !important;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .progress-bars-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+        }
+
+        .progress-card {
+            background: var(--card-bg-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-speed) var(--transition-spring);
+            position: relative;
+            box-shadow: 
+                6px 6px 14px var(--shadow-dark),
+                -6px -6px 14px var(--shadow-light);
+            animation: cardSlideIn 0.6s var(--transition-spring) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .progress-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 
+                8px 8px 18px var(--shadow-dark),
+                -8px -8px 18px var(--shadow-light);
+        }
+
+        .progress-card h4 {
+            margin-bottom: 16px;
+            font-size: 1.1em;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 600;
+        }
+
+        .radial-progress {
+            display: block;
+            margin: 0 auto;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .radial-progress .progress-bg {
+            stroke: var(--border-color);
+        }
+
+        .radial-progress .progress-bar {
+            stroke: var(--primary-accent-color);
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .radial-progress .progress-text {
+            fill: var(--text-color);
+            font-size: 1.4em;
+            font-weight: 700;
+        }
+
+        .calendar-day {
+            transition: all 0.3s var(--transition-spring);
+        }
+
+        @keyframes cardSlideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-card:nth-child(1) { animation-delay: 0ms; }
+        .progress-card:nth-child(2) { animation-delay: 100ms; }
+        .progress-card:nth-child(3) { animation-delay: 200ms; }
+        .progress-card:nth-child(4) { animation-delay: 300ms; }
+        .progress-card:nth-child(5) { animation-delay: 400ms; }
+        .progress-card:nth-child(6) { animation-delay: 500ms; }
+        .progress-card:nth-child(n+7) { animation-delay: 600ms; }
+
+        .calendar-grid.transitioning {
+            opacity: 0.3;
+            transform: scale(0.98);
+        }
+
+        .calendar-grid.fade-enter {
+            opacity: 0;
+            transform: translateX(20px) scale(0.98);
+        }
+
+        .calendar-grid.fade-enter-active {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            transition: all 0.4s var(--transition-spring);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: var(--card-raised-bg-color);
+            color: var(--text-color);
+            padding: 12px 16px;
+            border-radius: var(--border-radius-small);
+            font-size: 0.9em;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all var(--transition-speed) var(--transition-spring);
+            box-shadow: 
+                6px 6px 16px var(--shadow-dark),
+                -6px -6px 16px var(--shadow-light);
+            border: 1px solid var(--border-color);
+            max-width: 250px;
+            word-wrap: break-word;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border: 5px solid transparent;
+            border-top-color: var(--card-raised-bg-color);
+        }
+
+        .custom-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .custom-modal.show {
+            display: flex;
+        }
+
+        .custom-modal-content {
+            background: var(--card-bg-color);
+            padding: 32px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 500px;
+            animation: modalSlideIn 0.3s var(--transition-spring);
+            box-shadow: 
+                12px 12px 24px var(--shadow-dark),
+                -12px -12px 24px var(--shadow-light);
+            border: 1px solid var(--border-color);
+        }
+
+        @keyframes modalSlideIn {
+            from { 
+                transform: translateY(-50px) scale(0.9); 
+                opacity: 0; 
+            }
+            to { 
+                transform: translateY(0) scale(1); 
+                opacity: 1; 
+            }
+        }
+
+        .custom-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .custom-modal-header h3 {
+            font-size: 1.5em;
+            background: linear-gradient(135deg, var(--primary-accent-color), var(--secondary-accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 600;
+        }
+
+        .custom-modal-close {
+            color: var(--text-muted-color);
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-speed) var(--transition-spring);
+        }
+
+        .custom-modal-close:hover {
+            color: var(--danger-color);
+            background: var(--card-raised-bg-color);
+            box-shadow: 
+                2px 2px 6px var(--shadow-dark),
+                -2px -2px 6px var(--shadow-light);
+        }
+
+        .custom-modal-body {
+            margin-bottom: 24px;
+        }
+
+        .custom-modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius-small);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all var(--transition-speed) var(--transition-spring);
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-btn-primary {
+            background: linear-gradient(135deg, var(--primary-accent-color), var(--secondary-accent-color));
+            color: white;
+            box-shadow: 
+                4px 4px 12px var(--shadow-dark),
+                -2px -2px 8px var(--shadow-light);
+        }
+
+        .modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                6px 6px 16px var(--shadow-dark),
+                -3px -3px 10px var(--shadow-light);
+        }
+
+        .modal-btn-secondary {
+            background: var(--card-raised-bg-color);
+            color: var(--text-color);
+            box-shadow: 
+                4px 4px 12px var(--shadow-dark),
+                -4px -4px 12px var(--shadow-light);
+        }
+
+        .modal-btn-secondary:hover {
+            background: var(--border-color);
+            transform: translateY(-2px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg-color);
+            padding: 32px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 
+                12px 12px 24px var(--shadow-dark),
+                -12px -12px 24px var(--shadow-light);
+            animation: modalSlideIn 0.3s var(--transition-spring);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.5em;
+            background: linear-gradient(135deg, var(--primary-accent-color), var(--secondary-accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 600;
+        }
+
+        .close-button {
+            color: var(--text-muted-color);
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-speed) var(--transition-spring);
+        }
+
+        .close-button:hover {
+            color: var(--danger-color);
+            background: var(--card-raised-bg-color);
+            box-shadow: 
+                2px 2px 6px var(--shadow-dark),
+                -2px -2px 6px var(--shadow-light);
+        }
+
+        #modalHabitList {
+            margin-bottom: 24px;
+        }
+
+        .modal-habit-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            transition: all var(--transition-speed) var(--transition-spring);
+        }
+
+        .modal-habit-item:last-child {
+            border-bottom: none;
+        }
+
+        .modal-habit-item:hover {
+            background: var(--card-raised-bg-color);
+            margin: 0 -8px;
+            padding: 12px 8px;
+            border-radius: var(--border-radius-small);
+        }
+
+        .modal-habit-item input[type="checkbox"] {
+            margin-right: 16px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .modal-habit-item label {
+            font-size: 1em;
+            flex-grow: 1;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        #saveDayLogBtn {
+            padding: 14px 24px;
+            border-radius: var(--border-radius-small);
+            border: none;
+            background: linear-gradient(135deg, var(--primary-accent-color), var(--secondary-accent-color));
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-speed) var(--transition-spring);
+            width: 100%;
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 
+                4px 4px 12px var(--shadow-dark),
+                -2px -2px 8px var(--shadow-light);
+        }
+
+        #saveDayLogBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                6px 6px 16px var(--shadow-dark),
+                -3px -3px 10px var(--shadow-light);
+        }
+
+        input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            background: var(--card-bg-color);
+            border: 2px solid var(--border-color);
+            cursor: pointer;
+            position: relative;
+            transition: all var(--transition-speed) var(--transition-spring);
+            box-shadow: 
+                inset 2px 2px 4px var(--shadow-inset-dark),
+                inset -2px -2px 4px var(--shadow-inset-light);
+        }
+
+        input[type="checkbox"]:checked {
+            background: var(--primary-accent-color);
+            border-color: var(--primary-accent-color);
+            box-shadow: 
+                2px 2px 6px var(--shadow-dark),
+                -2px -2px 6px var(--shadow-light);
+        }
+
+        input[type="checkbox"]:checked::before {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        input[type="checkbox"]:hover {
+            border-color: var(--primary-accent-color);
+            box-shadow: 
+                inset 2px 2px 4px var(--shadow-inset-dark),
+                inset -2px -2px 4px var(--shadow-inset-light),
+                0 0 0 1px var(--primary-accent-color);
+        }
+
+        input[type="checkbox"]:focus {
+            outline: none;
+            box-shadow: 
+                inset 2px 2px 4px var(--shadow-inset-dark),
+                inset -2px -2px 4px var(--shadow-inset-light),
+                0 0 0 2px var(--primary-accent-color);
+        }
+
+        .modal-habit-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+
+        .modal-habit-item input[type="checkbox"]:checked::before {
+            font-size: 14px;
+        }
+
+        .filter-checkbox-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+
+        .filter-checkbox-item input[type="checkbox"]:checked::before {
+            font-size: 10px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-accent-color);
+            border-radius: 4px;
+            transition: background var(--transition-speed);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-accent-color);
+        }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-accent-color) var(--bg-color);
+        }
+
+        *:focus {
+            outline: none;
+        }
+
+        *:focus-visible {
+            outline: 2px solid var(--primary-accent-color);
+            outline-offset: 2px;
+        }
+
+        .mobile-toggle-btn {
+            display: none;
+            width: 100%;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, var(--primary-accent-color), var(--secondary-accent-color));
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-small);
+            font-weight: 600;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all var(--transition-speed) var(--transition-spring);
+            margin-top: 16px;
+            box-shadow: 
+                4px 4px 12px var(--shadow-dark),
+                -2px -2px 8px var(--shadow-light);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .mobile-toggle-btn::before {
+            content: "📱";
+            font-size: 1em;
+            color: initial !important;
+            background: none !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: unset !important;
+            background-clip: unset !important;
+            filter: none !important;
+        }
+
+        .mobile-toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                6px 6px 16px var(--shadow-dark),
+                -3px -3px 10px var(--shadow-light);
+        }
+
+        .mobile-toggle-btn:active {
+            transform: translateY(0);
+        }
+
+        .mobile-toggle-btn .toggle-icon {
+            margin-left: 8px;
+            transition: transform var(--transition-speed) var(--transition-spring);
+        }
+
+        .mobile-toggle-btn.expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+                gap: 0;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                padding-bottom: 16px;
+            }
+
+            .mobile-toggle-btn {
+                display: flex;
+            }
+
+            .main-header {
+                gap: 12px;
+                margin-bottom: 16px;
+            }
+
+            .main-header h2 {
+                font-size: 1.4em;
+                min-width: 200px;
+            }
+
+            .main-header button {
+                padding: 10px 12px;
+                font-size: 1.1em;
+            }
+
+            .calendar-grid {
+                max-width: 100%;
+                gap: 3px;
+            }
+
+            .calendar-grid .calendar-day {
+                max-width: none;
+                max-height: none;
+                font-size: 0.75em;
+            }
+
+            .calendar-header {
+                max-width: 100%;
+                gap: 3px;
+            }
+
+            .calendar-grid .calendar-day:hover {
+                transform: none;
+            }
+
+            .progress-card:hover {
+                transform: none;
+            }
+
+            .filter-panel {
+                margin-bottom: 16px;
+            }
+
+            .completion-rates {
+                margin-bottom: 16px;
+            }
+
+            .filter-group {
+                margin-bottom: 12px;
+            }
+
+            .filter-checkboxes {
+                max-height: 100px;
+            }
+
+            .habit-list-sortable {
+                max-height: 300px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <h1>HabitTracker</h1>
+            <div class="add-habit-form">
+                <input type="text" id="newHabitInput" placeholder="New Habit Name">
+                <div class="color-picker-wrapper">
+                    <label for="newHabitColorInput">Choose a color</label>
+                    <input type="color" id="newHabitColorInput" value="#89b4fa">
+                </div>
+                <button id="addHabitBtn">Add Habit</button>
+            </div>
+            
+            <div class="completion-rates">
+                <h3>Completion Rates</h3>
+                <div class="rate-item">
+                    <span class="rate-label">Today</span>
+                    <span id="todayRate" class="rate-value">0%</span>
+                </div>
+                <div class="rate-item">
+                    <span class="rate-label">This Week</span>
+                    <span id="weekRate" class="rate-value">0%</span>
+                </div>
+                <div class="rate-item">
+                    <span class="rate-label">This Month</span>
+                    <span id="monthRate" class="rate-value">0%</span>
+                </div>
+            </div>
+            
+            <div class="filter-panel">
+                <div class="filter-group">
+                    <label class="filter-label" for="searchFilter">Search Habits</label>
+                    <input type="text" id="searchFilter" class="filter-input" placeholder="Type to search...">
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label" for="performanceFilter">Performance</label>
+                    <select id="performanceFilter" class="filter-select">
+                        <option value="all">All Habits</option>
+                        <option value="high">High Performers (>70%)</option>
+                        <option value="medium">Medium Performers (30-70%)</option>
+                        <option value="low">Low Performers (<30%)</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label" for="statusFilter">Today's Status</label>
+                    <select id="statusFilter" class="filter-select">
+                        <option value="all">All Habits</option>
+                        <option value="completed">Completed Today</option>
+                        <option value="pending">Not Completed Today</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Habit Visibility</label>
+                    <div id="visibilityFilters" class="filter-checkboxes">
+                    </div>
+                </div>
+                
+                <div id="filterStats" class="filter-stats">
+                </div>
+            </div>
+            
+            <h2>My Habits</h2>
+            <ul id="habitList" class="habit-list-sortable">
+            </ul>
+            
+            <button id="mobileToggleBtn" class="mobile-toggle-btn">
+                Show Calendar & Progress
+                <span class="toggle-icon">▼</span>
+            </button>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <button id="prevMonthBtn">&lt;</button>
+                <h2 id="currentMonthYear">Month Year</h2>
+                <button id="nextMonthBtn">&gt;</button>
+            </header>
+
+            <section class="calendar-heatmap-section">
+                <h3>Daily Consistency</h3>
+                <div class="calendar-header" id="calendarHeader">
+                </div>
+                <div id="calendarHeatmap" class="calendar-grid">
+                </div>
+                <div class="legend">
+                    <span>Less</span>
+                    <span class="color-box" style="background-color: var(--heatmap-color-1);"></span>
+                    <span class="color-box" style="background-color: var(--heatmap-color-2);"></span>
+                    <span class="color-box" style="background-color: var(--heatmap-color-3);"></span>
+                    <span class="color-box" style="background-color: var(--heatmap-color-4);"></span>
+                    <span class="color-box" style="background-color: var(--heatmap-color-5);"></span>
+                    <span>More</span>
+                </div>
+            </section>
+
+            <section class="monthly-goals-section">
+                <h3>Monthly Progress</h3>
+                <div id="radialProgressBarsContainer" class="progress-bars-grid">
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="dayLogModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalDate">Log for YYYY-MM-DD</h3>
+                <span class="close-button" id="modalCloseBtn">&times;</span>
+            </div>
+            <div id="modalHabitList">
+            </div>
+            <button id="saveDayLogBtn">Save Changes</button>
+        </div>
+    </div>
+
+    <div id="customAlertModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h3 id="alertTitle">Notice</h3>
+                <span class="custom-modal-close" id="alertCloseBtn">&times;</span>
+            </div>
+            <div class="custom-modal-body">
+                <p id="alertMessage"></p>
+            </div>
+            <div class="custom-modal-buttons">
+                <button class="modal-btn modal-btn-primary" id="alertOkBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="customConfirmModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h3 id="confirmTitle">Confirm</h3>
+                <span class="custom-modal-close" id="confirmCloseBtn">&times;</span>
+            </div>
+            <div class="custom-modal-body">
+                <p id="confirmMessage"></p>
+            </div>
+            <div class="custom-modal-buttons">
+                <button class="modal-btn modal-btn-secondary" id="confirmCancelBtn">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="confirmOkBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+        function showCustomAlert(message, title = 'Notice') {
+            const modal = document.getElementById('customAlertModal');
+            const titleEl = document.getElementById('alertTitle');
+            const messageEl = document.getElementById('alertMessage');
+            
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            modal.classList.add('show');
+            
+            return new Promise((resolve) => {
+                const okBtn = document.getElementById('alertOkBtn');
+                const closeBtn = document.getElementById('alertCloseBtn');
+                
+                const handleClose = () => {
+                    modal.classList.remove('show');
+                    okBtn.removeEventListener('click', handleClose);
+                    closeBtn.removeEventListener('click', handleClose);
+                    resolve();
+                };
+                
+                okBtn.addEventListener('click', handleClose);
+                closeBtn.addEventListener('click', handleClose);
+            });
+        }
+
+        function showCustomConfirm(message, title = 'Confirm') {
+            const modal = document.getElementById('customConfirmModal');
+            const titleEl = document.getElementById('confirmTitle');
+            const messageEl = document.getElementById('confirmMessage');
+            
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            modal.classList.add('show');
+            
+            return new Promise((resolve) => {
+                const okBtn = document.getElementById('confirmOkBtn');
+                const cancelBtn = document.getElementById('confirmCancelBtn');
+                const closeBtn = document.getElementById('confirmCloseBtn');
+                
+                const handleOk = () => {
+                    modal.classList.remove('show');
+                    cleanup();
+                    resolve(true);
+                };
+                
+                const handleCancel = () => {
+                    modal.classList.remove('show');
+                    cleanup();
+                    resolve(false);
+                };
+                
+                const cleanup = () => {
+                    okBtn.removeEventListener('click', handleOk);
+                    cancelBtn.removeEventListener('click', handleCancel);
+                    closeBtn.removeEventListener('click', handleCancel);
+                };
+                
+                okBtn.addEventListener('click', handleOk);
+                cancelBtn.addEventListener('click', handleCancel);
+                closeBtn.addEventListener('click', handleCancel);
+            });
+        }
+
+        function showTooltip(element, content, event) {
+            const tooltip = document.getElementById('tooltip');
+            const rect = element.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+            
+            tooltip.innerHTML = content;
+            tooltip.style.display = 'block';
+            
+            let left = rect.left + scrollLeft + rect.width / 2 - tooltip.offsetWidth / 2;
+            let top = rect.top + scrollTop - tooltip.offsetHeight - 12;
+            
+            const viewportWidth = window.innerWidth;
+            if (left < 10) {
+                left = 10;
+            } else if (left + tooltip.offsetWidth > viewportWidth - 10) {
+                left = viewportWidth - tooltip.offsetWidth - 10;
+            }
+            
+            if (top < scrollTop + 10) {
+                top = rect.bottom + scrollTop + 12;
+            }
+            
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+            tooltip.style.display = 'block';
+            
+            requestAnimationFrame(() => {
+                tooltip.classList.add('show');
+            });
+        }
+
+        function hideTooltip() {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.classList.remove('show');
+            setTimeout(() => {
+                if (!tooltip.classList.contains('show')) {
+                    tooltip.style.display = 'none';
+                }
+            }, 300);
+        }
+
+        const App = {
+            state: {
+                habits: [],
+                currentDate: new Date(),
+                selectedDateForModal: null,
+                draggedItem: null,
+                autoScrollInterval: null,
+                mobileCalendarVisible: false,
+                mobileTooltipStates: new Map(),
+                previousRates: {
+                    today: 0,
+                    week: 0,
+                    month: 0
+                },
+                previousProgressValues: new Map(),
+                filters: {
+                    search: '',
+                    performance: 'all',
+                    status: 'all',
+                    visibleHabits: new Set()
+                }
+            },
+
+            elements: {
+                newHabitInput: document.getElementById('newHabitInput'),
+                newHabitColorInput: document.getElementById('newHabitColorInput'),
+                addHabitBtn: document.getElementById('addHabitBtn'),
+                habitList: document.getElementById('habitList'),
+                mobileToggleBtn: document.getElementById('mobileToggleBtn'),
+                todayRate: document.getElementById('todayRate'),
+                weekRate: document.getElementById('weekRate'),
+                monthRate: document.getElementById('monthRate'),
+                searchFilter: document.getElementById('searchFilter'),
+                performanceFilter: document.getElementById('performanceFilter'),
+                statusFilter: document.getElementById('statusFilter'),
+                visibilityFilters: document.getElementById('visibilityFilters'),
+                filterStats: document.getElementById('filterStats'),
+                mainContent: document.querySelector('.main-content'),
+                prevMonthBtn: document.getElementById('prevMonthBtn'),
+                nextMonthBtn: document.getElementById('nextMonthBtn'),
+                currentMonthYear: document.getElementById('currentMonthYear'),
+                calendarHeader: document.getElementById('calendarHeader'),
+                calendarHeatmap: document.getElementById('calendarHeatmap'),
+                radialProgressBarsContainer: document.getElementById('radialProgressBarsContainer'),
+                dayLogModal: document.getElementById('dayLogModal'),
+                modalDate: document.getElementById('modalDate'),
+                modalHabitList: document.getElementById('modalHabitList'),
+                modalCloseBtn: document.getElementById('modalCloseBtn'),
+                saveDayLogBtn: document.getElementById('saveDayLogBtn'),
+            },
+
+            init() {
+                this.loadHabits();
+                this.addEventListeners();
+                this.renderAll();
+                
+                window.addEventListener('resize', () => {
+                    if (!this.isMobile() && this.state.mobileCalendarVisible) {
+                        this.elements.mainContent.classList.remove('mobile-visible');
+                        this.state.mobileCalendarVisible = false;
+                    }
+                    this.state.mobileTooltipStates.clear();
+                    hideTooltip();
+                });
+            },
+
+            addEventListeners() {
+                this.elements.addHabitBtn.addEventListener('click', () => this.addHabit());
+                this.elements.newHabitInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.addHabit();
+                });
+                
+                this.elements.mobileToggleBtn.addEventListener('click', () => {
+                    this.toggleMobileCalendar();
+                });
+                
+                this.elements.searchFilter.addEventListener('input', (e) => {
+                    this.state.filters.search = e.target.value.toLowerCase();
+                    this.applyFilters();
+                });
+                
+                this.elements.performanceFilter.addEventListener('change', (e) => {
+                    this.state.filters.performance = e.target.value;
+                    this.applyFilters();
+                });
+                
+                this.elements.statusFilter.addEventListener('change', (e) => {
+                    this.state.filters.status = e.target.value;
+                    this.applyFilters();
+                });
+                
+                this.elements.habitList.addEventListener('click', async (e) => {
+                    if (e.target.classList.contains('delete-habit-btn')) {
+                        const habitId = e.target.closest('li').dataset.id;
+                        const habit = this.getHabitById(habitId);
+                        const confirmed = await showCustomConfirm(
+                            `Are you sure you want to delete "${habit.name}" and all its log data?`,
+                            'Delete Habit'
+                        );
+                        if (confirmed) {
+                            this.deleteHabit(habitId);
+                        }
+                    }
+                });
+
+                this.elements.habitList.addEventListener('dragstart', (e) => {
+                    this.state.draggedItem = e.target;
+                    e.target.classList.add('dragging');
+                });
+                
+                this.elements.habitList.addEventListener('dragend', (e) => {
+                    if (this.state.draggedItem) {
+                        this.state.draggedItem.classList.remove('dragging');
+                    }
+                    this.state.draggedItem = null;
+                    this.stopAutoScroll();
+                    this.updateHabitOrder();
+                });
+                
+                this.elements.habitList.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    this.handleAutoScroll(e);
+                    const afterElement = this.getDragAfterElement(this.elements.habitList, e.clientY);
+                    const draggable = document.querySelector('.dragging');
+                    if (draggable) {
+                        if (afterElement == null) {
+                            this.elements.habitList.appendChild(draggable);
+                        } else {
+                            this.elements.habitList.insertBefore(draggable, afterElement);
+                        }
+                    }
+                });
+
+                this.elements.prevMonthBtn.addEventListener('click', () => this.changeMonth(-1));
+                this.elements.nextMonthBtn.addEventListener('click', () => this.changeMonth(1));
+                this.elements.calendarHeatmap.addEventListener('click', (e) => {
+                    const dayCell = e.target.closest('.calendar-day');
+                    if (dayCell && !dayCell.classList.contains('empty') && dayCell.dataset.date) {
+                        this.handleCalendarDayClick(dayCell, e);
+                    }
+                });
+
+                this.elements.calendarHeatmap.addEventListener('mouseenter', (e) => {
+                    if (this.isMobile()) return;
+                    const dayCell = e.target.closest('.calendar-day');
+                    if (dayCell && !dayCell.classList.contains('empty') && dayCell.dataset.date) {
+                        const tooltipContent = this.getCalendarDayTooltip(dayCell.dataset.date);
+                        showTooltip(dayCell, tooltipContent, e);
+                    }
+                }, true);
+
+                this.elements.calendarHeatmap.addEventListener('mouseleave', (e) => {
+                    if (this.isMobile()) return;
+                    const dayCell = e.target.closest('.calendar-day');
+                    if (dayCell && !dayCell.classList.contains('empty')) {
+                        hideTooltip();
+                    }
+                }, true);
+
+                this.elements.modalCloseBtn.addEventListener('click', () => this.closeDayLogModal());
+                this.elements.saveDayLogBtn.addEventListener('click', () => this.saveDayLog());
+                this.elements.dayLogModal.addEventListener('click', (e) => {
+                    if (e.target === this.elements.dayLogModal) {
+                        this.closeDayLogModal();
+                    }
+                });
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.closeDayLogModal();
+                        document.getElementById('customAlertModal').classList.remove('show');
+                        document.getElementById('customConfirmModal').classList.remove('show');
+                        hideTooltip(); 
+                    }
+                });
+            },
+            
+            handleAutoScroll(e) {
+                const container = this.elements.habitList;
+                const rect = container.getBoundingClientRect();
+                const scrollThreshold = 40;
+                const scrollSpeed = 2;
+                const mouseY = e.clientY;
+                const containerTop = rect.top;
+                const containerBottom = rect.bottom;
+                
+                this.stopAutoScroll();
+                if (mouseY - containerTop < scrollThreshold && container.scrollTop > 0) {
+                    this.startAutoScroll(-scrollSpeed);
+                }
+                else if (containerBottom - mouseY < scrollThreshold && 
+                         container.scrollTop < container.scrollHeight - container.clientHeight) {
+                    this.startAutoScroll(scrollSpeed);
+                }
+            },
+
+            startAutoScroll(speed) {
+                this.state.autoScrollInterval = setInterval(() => {
+                    this.elements.habitList.scrollTop += speed;
+                }, 16);
+            },
+
+            stopAutoScroll() {
+                if (this.state.autoScrollInterval) {
+                    clearInterval(this.state.autoScrollInterval);
+                    this.state.autoScrollInterval = null;
+                }
+            },
+
+            animateNumber(element, startValue, endValue, duration = 800, suffix = '%') {
+                const startTime = performance.now();
+                const range = endValue - startValue;
+                const updateNumber = (currentTime) => {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const easeProgress = 1 - Math.pow(1 - progress, 3);
+                    const currentValue = Math.round(startValue + (range * easeProgress));
+                    
+                    element.textContent = currentValue + suffix;
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(updateNumber);
+                    }
+                };
+                
+                requestAnimationFrame(updateNumber);
+            },
+
+            animateProgressBar(svg, startPercent, endPercent, color, duration = 1200) {
+                const circle = svg.querySelector('.progress-bar');
+                const text = svg.querySelector('.progress-text');
+                const radius = 60;
+                const circumference = 2 * Math.PI * radius;
+                circle.style.stroke = color;
+                circle.style.strokeDashoffset = circumference * (1 - startPercent / 100);
+                requestAnimationFrame(() => {
+                    circle.style.strokeDashoffset = circumference * (1 - endPercent / 100);
+                });
+                this.animateNumber(text, startPercent, endPercent, duration, '%');
+            },
+
+            isMobile() {
+                return window.innerWidth <= 768;
+            },
+
+            toggleMobileCalendar() {
+                this.state.mobileCalendarVisible = !this.state.mobileCalendarVisible;
+                
+                if (this.state.mobileCalendarVisible) {
+                    this.elements.mainContent.classList.add('mobile-visible');
+                    this.elements.mobileToggleBtn.innerHTML = 'Hide Calendar & Progress <span class="toggle-icon">▲</span>';
+                    this.elements.mobileToggleBtn.classList.add('expanded');
+                } else {
+                    this.elements.mainContent.classList.remove('mobile-visible');
+                    this.elements.mobileToggleBtn.innerHTML = 'Show Calendar & Progress <span class="toggle-icon">▼</span>';
+                    this.elements.mobileToggleBtn.classList.remove('expanded');
+                    hideTooltip();
+                }
+            },
+
+            handleCalendarDayClick(dayCell, event) {
+                const dateString = dayCell.dataset.date;
+                
+                if (this.isMobile()) {
+                    const tooltipState = this.state.mobileTooltipStates.get(dateString);
+                    
+                    if (!tooltipState || !tooltipState.shown) {
+                        event.preventDefault();
+                        const tooltipContent = this.getCalendarDayTooltip(dateString);
+                        showTooltip(dayCell, tooltipContent, event);
+                        this.state.mobileTooltipStates.set(dateString, { shown: true, timestamp: Date.now() });
+                        setTimeout(() => {
+                            hideTooltip();
+                            this.state.mobileTooltipStates.delete(dateString);
+                        }, 3000);
+                        
+                    } else {
+                        const timeDiff = Date.now() - tooltipState.timestamp;
+                        if (timeDiff < 5000) {
+                            hideTooltip();
+                            this.state.mobileTooltipStates.delete(dateString);
+                            this.openDayLogModal(dateString);
+                        } else {
+                            const tooltipContent = this.getCalendarDayTooltip(dateString);
+                            showTooltip(dayCell, tooltipContent, event);
+                            this.state.mobileTooltipStates.set(dateString, { shown: true, timestamp: Date.now() });
+                        }
+                    }
+                } else {
+                    this.openDayLogModal(dateString);
+                }
+            },
+
+            getDragAfterElement(container, y) {
+                const draggableElements = [...container.querySelectorAll('li:not(.dragging)')];
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            },
+
+            updateHabitOrder() {
+                const orderedIds = Array.from(this.elements.habitList.querySelectorAll('li')).map(li => li.dataset.id);
+                this.state.habits.forEach(habit => {
+                    habit.order = orderedIds.indexOf(habit.id);
+                });
+                this.state.habits.sort((a, b) => a.order - b.order);
+                this.saveHabits();
+                this.renderRadialProgressBars();
+            },
+
+            loadHabits() {
+                const habitsData = localStorage.getItem('habitsTrackerData');
+                if (habitsData) {
+                    try {
+                        this.state.habits = JSON.parse(habitsData);
+                        this.state.habits.forEach(habit => {
+                            if (!habit.log || typeof habit.log !== 'object') {
+                                habit.log = {};
+                            }
+                        });
+                    } catch (e) {
+                        console.error("Error parsing habits from localStorage:", e);
+                        this.state.habits = [];
+                    }
+                } else {
+                    this.state.habits = [];
+                }
+                
+                this.state.filters.visibleHabits = new Set(this.state.habits.map(habit => habit.id));
+            },
+
+            saveHabits() {
+                localStorage.setItem('habitsTrackerData', JSON.stringify(this.state.habits));
+            },
+
+            generateUUID() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+            },
+
+            async addHabit() {
+                const name = this.elements.newHabitInput.value.trim();
+                const color = this.elements.newHabitColorInput.value;
+                if (!name) {
+                    await showCustomAlert('Please enter a habit name.', 'Missing Information');
+                    return;
+                }
+                const newHabit = {
+                    id: this.generateUUID(),
+                    name: name,
+                    color: color,
+                    createdAt: Date.now(),
+                    log: {},
+                    order: this.state.habits.length,
+                };
+                this.state.habits.push(newHabit);
+                this.state.filters.visibleHabits.add(newHabit.id);
+                this.saveHabits();
+                this.renderAll();
+                this.renderVisibilityFilters();
+                this.elements.newHabitInput.value = '';
+            },
+
+            deleteHabit(habitId) {
+                this.state.habits = this.state.habits.filter(habit => habit.id !== habitId);
+                this.state.habits.forEach((habit, index) => habit.order = index);
+                this.state.filters.visibleHabits.delete(habitId);
+                this.state.previousProgressValues.delete(habitId);
+                this.saveHabits();
+                this.renderAll();
+                this.renderVisibilityFilters();
+            },
+
+            getHabitPerformance(habit) {
+                const year = this.state.currentDate.getFullYear();
+                const month = this.state.currentDate.getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                
+                let completedDays = 0;
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    if (habit.log && habit.log[dateString]) {
+                        completedDays++;
+                    }
+                }
+                
+                return daysInMonth > 0 ? (completedDays / daysInMonth) * 100 : 0;
+            },
+
+            isHabitCompletedToday(habit) {
+                const today = new Date();
+                const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                return habit.log && habit.log[dateString] === true;
+            },
+
+            getFilteredHabits() {
+                return this.state.habits.filter(habit => {
+                    if (this.state.filters.search && !habit.name.toLowerCase().includes(this.state.filters.search)) {
+                        return false;
+                    }
+                    
+                    if (this.state.filters.performance !== 'all') {
+                        const performance = this.getHabitPerformance(habit);
+                        if (this.state.filters.performance === 'high' && performance <= 70) return false;
+                        if (this.state.filters.performance === 'medium' && (performance <= 30 || performance > 70)) return false;
+                        if (this.state.filters.performance === 'low' && performance >= 30) return false;
+                    }
+                    
+                    if (this.state.filters.status !== 'all') {
+                        const completedToday = this.isHabitCompletedToday(habit);
+                        if (this.state.filters.status === 'completed' && !completedToday) return false;
+                        if (this.state.filters.status === 'pending' && completedToday) return false;
+                    }
+                    
+                    if (!this.state.filters.visibleHabits.has(habit.id)) {
+                        return false;
+                    }
+                    
+                    return true;
+                });
+            },
+
+            applyFilters() {
+                this.renderHabitList();
+                this.renderRadialProgressBars();
+                this.updateFilterStats();
+            },
+
+            updateFilterStats() {
+                const totalHabits = this.state.habits.length;
+                const filteredHabits = this.getFilteredHabits().length;
+                const visibleHabits = this.state.habits.filter(h => this.state.filters.visibleHabits.has(h.id)).length;
+                
+                this.elements.filterStats.textContent = `Showing ${filteredHabits} of ${visibleHabits} visible habits (${totalHabits} total)`;
+            },
+
+            updateCompletionRates() {
+                if (this.state.habits.length === 0) {
+                    this.animateNumber(this.elements.todayRate, this.state.previousRates.today, 0, 600, '%');
+                    this.animateNumber(this.elements.weekRate, this.state.previousRates.week, 0, 600, '%');
+                    this.animateNumber(this.elements.monthRate, this.state.previousRates.month, 0, 600, '%');
+                    this.elements.todayRate.className = 'rate-value';
+                    this.elements.weekRate.className = 'rate-value';
+                    this.elements.monthRate.className = 'rate-value';
+                    this.state.previousRates = { today: 0, week: 0, month: 0 };
+                    return;
+                }
+
+                const today = new Date();
+                const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                let todayCompleted = 0;
+                this.state.habits.forEach(habit => {
+                    if (habit.log && habit.log[todayString]) {
+                        todayCompleted++;
+                    }
+                });
+                const todayRate = Math.round((todayCompleted / this.state.habits.length) * 100);
+
+                const weekStart = new Date(today);
+                weekStart.setDate(today.getDate() - today.getDay());
+                let weekTotal = 0;
+                let weekCompleted = 0;
+                
+                for (let i = 0; i < 7; i++) { 
+                    const date = new Date(weekStart);
+                    date.setDate(weekStart.getDate() + i);
+                    const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                    this.state.habits.forEach(habit => {
+                        weekTotal++;
+                        if (habit.log && habit.log[dateString]) {
+                            weekCompleted++;
+                        }
+                    });
+                }
+                const weekRate = weekTotal > 0 ? Math.round((weekCompleted / weekTotal) * 100) : 0;
+
+                const currentYear = today.getFullYear();
+                const currentMonth = today.getMonth();
+                const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+                let monthTotal = 0;
+                let monthCompleted = 0;
+                
+                for (let day = 1; day <= daysInCurrentMonth; day++) { 
+                    const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    this.state.habits.forEach(habit => {
+                        monthTotal++;
+                        if (habit.log && habit.log[dateString]) {
+                            monthCompleted++;
+                        }
+                    });
+                }
+                const monthRate = monthTotal > 0 ? Math.round((monthCompleted / monthTotal) * 100) : 0;
+
+                this.animateNumber(this.elements.todayRate, this.state.previousRates.today, todayRate, 600, '%');
+                this.animateNumber(this.elements.weekRate, this.state.previousRates.week, weekRate, 700, '%');
+                this.animateNumber(this.elements.monthRate, this.state.previousRates.month, monthRate, 800, '%');
+
+                setTimeout(() => {
+                    this.elements.todayRate.className = `rate-value ${this.getRateClass(todayRate)}`;
+                    this.elements.weekRate.className = `rate-value ${this.getRateClass(weekRate)}`;
+                    this.elements.monthRate.className = `rate-value ${this.getRateClass(monthRate)}`;
+                }, 100);
+
+                this.state.previousRates = {
+                    today: todayRate,
+                    week: weekRate,
+                    month: monthRate
+                };
+            },
+
+            getRateClass(rate) {
+                if (rate >= 70) return 'high';
+                if (rate >= 40) return 'medium';
+                return 'low';
+            },
+
+            renderVisibilityFilters() {
+                this.elements.visibilityFilters.innerHTML = '';
+                
+                if (this.state.habits.length === 0) {
+                    this.elements.visibilityFilters.innerHTML = '<div class="filter-checkbox-item" style="color: var(--text-muted-color); font-style: italic;">No habits yet</div>';
+                    return;
+                }
+                
+                this.state.habits
+                    .sort((a, b) => a.order - b.order)
+                    .forEach(habit => {
+                        const item = document.createElement('div');
+                        item.className = 'filter-checkbox-item';
+                        
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.id = `visibility-${habit.id}`;
+                        checkbox.checked = this.state.filters.visibleHabits.has(habit.id);
+                        checkbox.addEventListener('change', (e) => {
+                            if (e.target.checked) {
+                                this.state.filters.visibleHabits.add(habit.id);
+                            } else {
+                                this.state.filters.visibleHabits.delete(habit.id);
+                            }
+                            this.applyFilters();
+                        });
+                        
+                        const label = document.createElement('label');
+                        label.htmlFor = `visibility-${habit.id}`;
+                        label.textContent = habit.name;
+                        label.style.color = habit.color;
+                        
+                        item.appendChild(checkbox);
+                        item.appendChild(label);
+                        this.elements.visibilityFilters.appendChild(item);
+                    });
+            },
+
+            getCalendarDayTooltip(dateString) {
+                const dateObj = new Date(dateString + 'T00:00:00');
+                const dayName = dateObj.toLocaleDateString('default', { weekday: 'short', month: 'short', day: 'numeric' });
+                
+                if (this.state.habits.length === 0) {
+                    return `<strong>${dayName}</strong><br>No habits to track`;
+                }
+                
+                const completedHabits = [];
+                const pendingHabits = [];
+                
+                this.state.habits.forEach(habit => {
+                    if (habit.log && habit.log[dateString]) {
+                        completedHabits.push(habit.name);
+                    } else {
+                        pendingHabits.push(habit.name);
+                    }
+                });
+                
+                let tooltip = `<strong>${dayName}</strong><br>`;
+                
+                if (completedHabits.length > 0) {
+                    tooltip += `<span style="color: var(--success-color);">✓ Completed (${completedHabits.length}):</span><br>`;
+                    tooltip += completedHabits.slice(0, 3).join(', ');
+                    if (completedHabits.length > 3) {
+                        tooltip += ` +${completedHabits.length - 3} more`;
+                    }
+                    tooltip += '<br><br>';
+                }
+                
+                if (pendingHabits.length > 0) {
+                    tooltip += `<span style="color: var(--text-muted-color);">○ Pending (${pendingHabits.length}):</span><br>`;
+                    tooltip += pendingHabits.slice(0, 3).join(', ');
+                    if (pendingHabits.length > 3) {
+                        tooltip += ` +${pendingHabits.length - 3} more`;
+                    }
+                }
+                
+                if (completedHabits.length === 0 && pendingHabits.length === 0) {
+                    tooltip += 'No habits tracked';
+                }
+                
+                const actionText = this.isMobile() ? 'Click AGAIN to log habits' : 'Click to log habits';
+                tooltip += `<br><br><em style="color: var(--text-muted-color); font-size: 0.8em;">${actionText}</em>`;
+                
+                return tooltip;
+            },
+
+            getHabitById(id) {
+                return this.state.habits.find(habit => habit.id === id);
+            },
+
+            logHabitCompletion(dateString, habitId, completed) {
+                const habit = this.getHabitById(habitId);
+                if (habit) {
+                    if (!habit.log) habit.log = {};
+                    habit.log[dateString] = completed;
+                    this.saveHabits();
+                }
+            },
+
+            renderAll() {
+                this.renderHabitList();
+                this.renderCalendar();
+                this.renderRadialProgressBars();
+                this.renderVisibilityFilters();
+                this.updateFilterStats();
+                this.updateCompletionRates();
+            },
+
+            renderHabitList() {
+                this.elements.habitList.innerHTML = '';
+                const filteredHabits = this.getFilteredHabits().sort((a, b) => a.order - b.order);
+                
+                if (filteredHabits.length === 0) {
+                    const emptyMessage = document.createElement('li');
+                    emptyMessage.style.cssText = 'color: var(--text-muted-color); text-align: center; padding: 20px; font-style: italic; background: none; box-shadow: none; border: none;';
+                    
+                    if (this.state.habits.length === 0) {
+                        emptyMessage.textContent = 'No habits yet. Add your first habit above!';
+                    } else {
+                        emptyMessage.textContent = 'No habits match current filters.';
+                    }
+                    
+                    this.elements.habitList.appendChild(emptyMessage);
+                    return;
+                }
+                
+                filteredHabits.forEach(habit => {
+                    const li = document.createElement('li');
+                    li.setAttribute('draggable', true);
+                    li.dataset.id = habit.id;
+                    li.style.borderLeftColor = habit.color;
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'habit-name';
+                    nameSpan.textContent = habit.name;
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-habit-btn';
+                    deleteBtn.innerHTML = '&times;';
+                    deleteBtn.title = "Delete habit";
+
+                    li.appendChild(nameSpan);
+                    li.appendChild(deleteBtn);
+                    this.elements.habitList.appendChild(li);
+                });
+            },
+
+            renderCalendar() {
+                const year = this.state.currentDate.getFullYear();
+                const month = this.state.currentDate.getMonth();
+                this.elements.currentMonthYear.textContent = `${this.state.currentDate.toLocaleString('default', { month: 'long' })} ${year}`;
+                this.elements.calendarHeatmap.classList.add('transitioning');
+                setTimeout(() => {
+                    this.elements.calendarHeatmap.innerHTML = '';
+                    this.elements.calendarHeader.innerHTML = '';
+                    const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    dayLabels.forEach(label => {
+                        const dayLabelDiv = document.createElement('div');
+                        dayLabelDiv.classList.add('day-label');
+                        dayLabelDiv.textContent = label;
+                        this.elements.calendarHeader.appendChild(dayLabelDiv);
+                    });
+
+                    const firstDayOfMonth = new Date(year, month, 1).getDay();
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                    for (let i = 0; i < firstDayOfMonth; i++) {
+                        const emptyCell = document.createElement('div');
+                        emptyCell.classList.add('calendar-day', 'empty');
+                        this.elements.calendarHeatmap.appendChild(emptyCell);
+                    }
+
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const dayCell = document.createElement('div');
+                        dayCell.classList.add('calendar-day');
+                        const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        dayCell.dataset.date = dateString;
+                        dayCell.textContent = day;
+                        if (this.state.habits.length > 0) {
+                            let completedCount = 0;
+                            this.state.habits.forEach(habit => {
+                                if (habit.log && habit.log[dateString]) {
+                                    completedCount++;
+                                }
+                            });
+                            const completionPercentage = (completedCount / this.state.habits.length) * 100;
+                            dayCell.style.backgroundColor = this.getHeatmapColor(completionPercentage);
+                        } else {
+                             dayCell.style.backgroundColor = 'var(--heatmap-color-0)';
+                        }
+                        this.elements.calendarHeatmap.appendChild(dayCell);
+                    }
+                    
+                    this.elements.calendarHeatmap.classList.remove('transitioning');
+                    this.elements.calendarHeatmap.classList.add('fade-enter');
+                    this.elements.calendarHeatmap.offsetHeight;
+                    this.elements.calendarHeatmap.classList.add('fade-enter-active');
+                    setTimeout(() => {
+                        this.elements.calendarHeatmap.classList.remove('fade-enter', 'fade-enter-active');
+                    }, 400);
+                }, 200);
+            },
+            
+            getHeatmapColor(percentage) {
+                if (percentage === 0) return 'var(--heatmap-color-0)';
+                if (percentage <= 20) return 'var(--heatmap-color-1)';
+                if (percentage <= 40) return 'var(--heatmap-color-2)';
+                if (percentage <= 60) return 'var(--heatmap-color-3)';
+                if (percentage <= 80) return 'var(--heatmap-color-4)';
+                return 'var(--heatmap-color-5)';
+            },
+
+            renderRadialProgressBars() {
+
+                const year = this.state.currentDate.getFullYear();
+                const month = this.state.currentDate.getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const filteredHabits = this.getFilteredHabits().sort((a,b) => a.order - b.order);
+                if (filteredHabits.length === 0) {
+                    let message = '';
+                    if (this.state.habits.length === 0) {
+                        message = 'No habits added yet. Add a habit to see progress!';
+                    } else {
+                        message = 'No habits match current filters.';
+                    }
+                    this.elements.radialProgressBarsContainer.innerHTML = `<p style="color: var(--text-muted-color); text-align: center; grid-column: 1 / -1;">${message}</p>`;
+                    return;
+                }
+
+                const existingCards = new Map();
+                Array.from(this.elements.radialProgressBarsContainer.children).forEach(card => {
+                    const habitId = card.dataset.habitId;
+                    if (habitId) {
+                        existingCards.set(habitId, card);
+                    }
+                });
+
+                const currentHabitIds = new Set(filteredHabits.map(habit => habit.id));
+
+                existingCards.forEach((card, habitId) => {
+                    if (!currentHabitIds.has(habitId)) {
+                        card.remove();
+                    }
+                });
+
+                filteredHabits.forEach(habit => {
+                    let completedDays = 0;
+                    
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        if (habit.log && habit.log[dateString]) {
+                            completedDays++;
+                        }
+                    }
+                    
+                    const progressPercent = daysInMonth > 0 ? Math.round((completedDays / daysInMonth) * 100) : 0;
+                    const previousPercent = this.state.previousProgressValues.get(habit.id) || 0;
+
+                    let card = existingCards.get(habit.id);
+                    
+                    if (card) {
+                        this.updateProgressCard(card, habit, completedDays, daysInMonth, progressPercent, previousPercent);
+                    } else {
+                        card = this.createProgressCard(habit, completedDays, daysInMonth, progressPercent, previousPercent);
+                        this.elements.radialProgressBarsContainer.appendChild(card);
+                    }
+                    this.state.previousProgressValues.set(habit.id, progressPercent);
+                });
+            },
+
+            createProgressCard(habit, completedDays, daysInMonth, progressPercent, previousPercent) {
+                const card = document.createElement('div');
+                card.classList.add('progress-card');
+                card.dataset.habitId = habit.id;
+                this.updateCardData(card, habit, completedDays, daysInMonth, progressPercent);
+                this.addProgressCardEvents(card);
+                const title = document.createElement('h4');
+                title.textContent = habit.name;
+                title.style.color = habit.color;
+                const svg = this.createProgressSVG(previousPercent);
+                card.appendChild(title);
+                card.appendChild(svg);
+                setTimeout(() => {
+                    this.animateProgressBar(svg, previousPercent, progressPercent, habit.color, 1200);
+                }, 50);
+                
+                return card;
+            },
+
+            updateProgressCard(card, habit, completedDays, daysInMonth, progressPercent, previousPercent) {
+                const title = card.querySelector('h4');
+                title.style.color = habit.color;
+                this.updateCardData(card, habit, completedDays, daysInMonth, progressPercent);
+                const svg = card.querySelector('.radial-progress');
+                this.animateProgressBar(svg, previousPercent, progressPercent, habit.color, 1200);
+            },
+
+            updateCardData(card, habit, completedDays, daysInMonth, progressPercent) {
+                card.dataset.habitName = habit.name;
+                card.dataset.completedDays = completedDays;
+                card.dataset.daysInMonth = daysInMonth;
+                card.dataset.progressPercent = progressPercent;
+            },
+
+            addProgressCardEvents(card) {
+                if (this.isMobile()) {
+                    card.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const tooltipContent = this.getCardTooltipContent(card);
+                        showTooltip(card, tooltipContent, e);
+                        setTimeout(hideTooltip, 3000);
+                    });
+                } else {
+                    card.addEventListener('mouseenter', (e) => {
+                        const tooltipContent = this.getCardTooltipContent(card);
+                        showTooltip(card, tooltipContent, e);
+                    });
+                    
+                    card.addEventListener('mouseleave', () => {
+                        hideTooltip();
+                    });
+                }
+            },
+
+            getCardTooltipContent(card) {
+                const name = card.dataset.habitName;
+                const completed = card.dataset.completedDays;
+                const total = card.dataset.daysInMonth;
+                const percent = card.dataset.progressPercent;
+                
+                return `
+                    <strong>${name}</strong><br>
+                    Completed: ${completed}/${total} days<br>
+                    Progress: ${percent}%
+                `;
+            },
+
+            createProgressSVG(initialPercent = 0) {
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.setAttribute('class', 'radial-progress');
+                svg.setAttribute('width', '140');
+                svg.setAttribute('height', '140');
+                svg.setAttribute('viewBox', '0 0 140 140');
+
+                const radius = 60;
+                const circumference = 2 * Math.PI * radius;
+
+                const bgCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                bgCircle.setAttribute('class', 'progress-bg');
+                bgCircle.setAttributes({ cx: "70", cy: "70", r: radius, "stroke-width": "12", fill: "transparent"});
+                
+                const fgCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                fgCircle.setAttribute('class', 'progress-bar');
+                fgCircle.setAttributes({ 
+                    cx: "70", cy: "70", r: radius, "stroke-width": "12", fill: "transparent",
+                    transform: "rotate(-90 70 70)",
+                    "stroke-dasharray": circumference,
+                    "stroke-dashoffset": circumference 
+                });
+
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute('class', 'progress-text');
+                text.setAttributes({ x: "50%", y: "50%", "dy": ".3em", "text-anchor": "middle" });
+                text.textContent = `${initialPercent}%`;
+
+                svg.appendChild(bgCircle);
+                svg.appendChild(fgCircle);
+                svg.appendChild(text);
+                
+                return svg;
+            },
+
+            openDayLogModal(dateString) {
+                this.state.selectedDateForModal = dateString;
+                const dateObj = new Date(dateString + 'T00:00:00');
+                this.elements.modalDate.textContent = `Log for ${dateObj.toLocaleDateString('default', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+                this.elements.modalHabitList.innerHTML = '';
+
+                if (this.state.habits.length === 0) {
+                     this.elements.modalHabitList.innerHTML = `<p style="color: var(--text-muted-color);">No habits to log. Add some habits first!</p>`;
+                } else {
+                    this.state.habits
+                        .sort((a,b) => a.order - b.order)
+                        .forEach(habit => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'modal-habit-item';
+                        
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.id = `modal-habit-${habit.id}`;
+                        checkbox.dataset.habitId = habit.id;
+                        checkbox.checked = (habit.log && habit.log[dateString] === true);
+
+                        const label = document.createElement('label');
+                        label.htmlFor = `modal-habit-${habit.id}`;
+                        label.textContent = habit.name;
+                        label.style.color = habit.color;
+
+                        itemDiv.appendChild(checkbox);
+                        itemDiv.appendChild(label);
+                        this.elements.modalHabitList.appendChild(itemDiv);
+                    });
+                }
+                this.elements.dayLogModal.classList.add('show');
+            },
+
+            closeDayLogModal() {
+                this.elements.dayLogModal.classList.remove('show');
+                this.state.selectedDateForModal = null;
+            },
+
+            saveDayLog() {
+                if (!this.state.selectedDateForModal) return;
+                
+                const checkboxes = this.elements.modalHabitList.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    const habitId = checkbox.dataset.habitId;
+                    this.logHabitCompletion(this.state.selectedDateForModal, habitId, checkbox.checked);
+                });
+                
+                this.closeDayLogModal();
+                this.renderCalendar();
+                this.renderRadialProgressBars();
+                this.updateCompletionRates();
+                this.applyFilters();
+            },
+
+            changeMonth(offset) {
+                this.state.currentDate.setMonth(this.state.currentDate.getMonth() + offset);
+                this.state.mobileTooltipStates.clear();
+                hideTooltip();
+                this.renderCalendar();
+                this.renderRadialProgressBars();
+                this.updateCompletionRates();
+            },
+        };
+
+        SVGElement.prototype.setAttributes = function(attrs) {
+            for (let key in attrs) {
+                this.setAttribute(key, attrs[key]);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            App.init();
+        });
+
+    </script>
+</body>
+</html>
